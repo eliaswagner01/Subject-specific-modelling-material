@@ -1,33 +1,10 @@
 # Subject-Specific Femur Model Modification Material
 
-This folder contains the custom scripts and support files used to create a subject-specific femur modification of the LaiUhlrich2022 OpenSim model. The workflow combines functionality from STAPLE/Modenese-style bone morphology processing (Modenese and Renault, 2021), NMSBuilder landmark snapping (Valente et al., 2017), and OpenSim model editing. The overall step-by-step image-based modelling approach follows Modenese et al. (2018).
+This folder contains the custom scripts and support files used to create a subject-specific femur modification of the baseline OpenSim model from (Uhlrich et al., 2022). The workflow combines functionality from STAPLE (Modenese and Renault, 2021), NMSBuilder (Valente et al., 2017), and OpenSim (Seth et al., 2018) and uses ressources from the Step-by-step modelling guide (Modenese et al., 2018). 
 
 The overall model modification process is illustrated here:
 
 <img src="images/modelModificationProcess.png" alt="Model modification process" width="700">
-
-## Folder Contents
-
-```text
-MATLAB functions/
-  createFemurModel.m
-  extractFemurPathPoints.m
-  modifyOsimModel.m
-
-NMSBuilder/
-  femurModel/
-  LaiUhlrich2022_withLandmarks/
-  NMSBuilderRajagopal_LaiUhlrich2022_femur_r_landmarks_and_muscle_path_points.txt
-  NMSBuilderRajagopal_LaiUhlrich2022_femur_l_landmarks_and_muscle_path_points.txt
-  Muscles_femur_r_snapped.txt
-  Muscles_femur_l_snapped.txt
-
-OpenSim/
-  LaiUhlrich2022.osim
-  LaiUhlrich2022_adjusted.osim
-  LaiUhlrich2022_markers_augmenter.xml
-  LaiUhlrich2022_markers_augmenter_adjusted.xml
-```
 
 ## Required Software
 
@@ -35,10 +12,10 @@ To run the scripts, users need:
 
 - MATLAB, tested with the OpenSim MATLAB API available.
 - OpenSim 4.x with the MATLAB scripting interface configured.
-- The STAPLE toolbox on the MATLAB path.
-- NMSBuilder, if the landmark snapping step should be reproduced or modified.
+- The STAPLE toolbox on the MATLAB path. STAPLE is available here: [Simtk STAPLE](https://simtk.org/projects/msk-staple)
+- NMSBuilder. NMSBuilder is available here: [Simtk NMSBuilder](https://simtk.org/frs/?group_id=978)
 
-STAPLE itself requires MATLAB toolboxes used by its morphology algorithms, especially:
+STAPLE itself requires MATLAB toolboxes used by its morphology algorithms:
 
 - Curve Fitting Toolbox
 - Statistics and Machine Learning Toolbox
@@ -54,13 +31,10 @@ model = Model('OpenSim/LaiUhlrich2022.osim');
 
 The custom workflow builds on:
 
-- STAPLE: Shared Tools for Automatic Personalised Lower Extremity modelling, cited through Modenese and Renault (2021).
-- Modenese et al. lower-limb model generation concepts and joint definitions, including the step-by-step subject-specific workflow described by Modenese et al. (2018).
-- GIBOC-core functions bundled with STAPLE for femur morphology processing.
-- OpenSim ScaleTool and model-editing API.
-- NMSBuilder for manually snapping muscle path points and wrap-object origins to the personalized femur geometry, cited through Valente et al. (2017).
-
-These scripts do not replace STAPLE or NMSBuilder. They are glue scripts that use their outputs to modify a LaiUhlrich-style OpenSim model.
+- STAPLE: Shared Tools for Automatic Personalised Lower Extremity modelling.
+- Step-by-step subject-specific workflow described by Modenese et al. (2018).
+- OpenSim ScaleTool and MATLAB API.
+- NMSBuilder for registering muscle landmark clouds
 
 ## Expected Input Data
 
@@ -80,7 +54,7 @@ The femur geometry coordinates are assumed to be in millimetres. OpenSim model c
 mm_to_m = 0.001;
 ```
 
-The OpenSim model is assumed to use LaiUhlrich/Rajagopal-style names, including:
+The OpenSim model is assumed to use names according to Uhlrich et al. (2022), including:
 
 ```text
 Bodies:
@@ -95,8 +69,6 @@ Joints:
 Marker set:
   LaiUhlrich2022_markers_augmenter.xml
 ```
-
-Muscle and wrap-object names in the snapped landmark files must match the names in the OpenSim model.
 
 ## Workflow Overview
 
@@ -114,7 +86,6 @@ This script:
 - loads subject-specific femur triangulations,
 - processes right and left femur geometries,
 - computes STAPLE joint coordinate systems,
-- exports reduced femur visualization geometry,
 - saves femur coordinate-system data,
 - computes right and left uniform femur scale factors,
 - scales the generic LaiUhlrich2022 model femurs using OpenSim ScaleTool.
@@ -146,20 +117,24 @@ This script extracts:
 
 - femur muscle path points,
 - femur wrap-object origins,
-- landmark rows required for NMSBuilder.
 
-It writes combined text files for the right and left femur:
+It writes landmark cloud for the right and left femur:
 
 ```text
 NMSBuilderRajagopal_LaiUhlrich2022_femur_r_landmarks_and_muscle_path_points.txt
 NMSBuilderRajagopal_LaiUhlrich2022_femur_l_landmarks_and_muscle_path_points.txt
 ```
 
-These files can be imported into NMSBuilder together with the femur geometries.
+These files can be imported into NMSBuilder as landmark clouds together with the femur geometries.
 
 ### 3. Snap muscle and wrap landmarks in NMSBuilder
 
-Use NMSBuilder to align/snap the exported muscle path points and wrap origins to the subject-specific femur geometry.
+Use NMSBuilder to register muscle path points and wrap object origins onto the subject-specific femur geometry and Run:
+
+```matlab
+MATLAB functions/snapLandmarks.m
+```
+This script snaps registered muscle path points to the bone surface.
 
 The expected snapped outputs are:
 
@@ -167,8 +142,6 @@ The expected snapped outputs are:
 NMSBuilder/Muscles_femur_r_snapped.txt
 NMSBuilder/Muscles_femur_l_snapped.txt
 ```
-
-Rows beginning with `O_` are treated as wrap-object origins. Other rows are treated as muscle path points. The names must match the OpenSim model.
 
 ### 4. Modify the scaled OpenSim model
 
@@ -186,10 +159,8 @@ This script:
 - replaces femur muscle path point locations,
 - replaces femur wrap-object origins,
 - transforms femur wrap-object rotations using the updated femur offset frame,
-- replaces the femur visualization meshes,
 - applies `0.001` mesh scale factors,
-- updates femur-side hip and walker-knee frames using saved STAPLE coordinate systems,
-- updates the patellofemoral femur-side frame from the updated walker-knee frame,
+- updates hip and knee joint frames using STAPLE coordinate systems,
 - transforms femur mass-centre and inertia properties,
 - updates femur marker locations in the marker set.
 
@@ -199,17 +170,6 @@ The main outputs are:
 OpenSim/LaiUhlrich2022_adjusted.osim
 OpenSim/LaiUhlrich2022_markers_augmenter_adjusted.xml
 ```
-
-## Coordinate and Unit Conventions
-
-Several coordinate systems interact in this workflow:
-
-- STAPLE femur coordinate systems are computed from the segmented femur geometry.
-- NMSBuilder-snapped landmarks are exported in the geometry coordinate system.
-- OpenSim body, joint, marker, muscle path, and wrap-object coordinates are stored in metres.
-- The LaiUhlrich2022 model uses its own femur body-frame convention.
-
-The modification script contains explicit transformations to move from the geometry/STAPLE convention into the OpenSim femur body frame. Users should not remove these transformations unless they also change the coordinate-system convention consistently.
 
 ## Paths Users Must Edit
 
@@ -231,21 +191,18 @@ For a reusable GitHub repository, it is recommended to replace these absolute pa
 ## Limitations
 
 - The scripts are specific to right and left femurs.
-- The OpenSim model must use compatible LaiUhlrich/Rajagopal naming.
+- The OpenSim model must use compatible naming.
 - The workflow assumes the muscle and wrap-object names in the NMSBuilder text files match the OpenSim model exactly.
-- NMSBuilder snapping is not automated by these MATLAB scripts.
-- The model editing logic assumes femur geometry is stored in millimetres and OpenSim coordinates in metres.
 - The scripts were developed for this thesis workflow and should be validated carefully before being reused for another subject or model.
 
-## Recommended Citation / Acknowledgement
+## Acknowledgement
 
 If using this material, cite the underlying tools and methods:
 
-- Modenese, L. and Renault, J.-B. (2021). Automatic generation of personalised skeletal models of the lower limb from three-dimensional bone geometries. *Journal of Biomechanics*, 116, 110186. https://doi.org/10.1016/j.jbiomech.2020.110186. Local PDF: [2021_Modenese.pdf](../literature/2021_Modenese.pdf).
-- Valente, G., Crimi, G., Vanella, N., Schileo, E. and Taddei, F. (2017). nmsBuilder: Freeware to create subject-specific musculoskeletal models for OpenSim. *Computer Methods and Programs in Biomedicine*, 152, 85-92. https://doi.org/10.1016/j.cmpb.2017.09.012. Local PDF: [2017_Valente.pdf](../literature/2017_Valente.pdf).
-- Modenese, L., Montefiori, E., Wang, A., Wesarg, S., Viceconti, M. and Mazza, C. (2018). Investigation of the dependence of joint contact forces on musculotendon parameters using a codified workflow for image-based modelling. *Journal of Biomechanics*, 73, 108-118. https://doi.org/10.1016/j.jbiomech.2018.03.039. Local PDF: [2018_modenese.pdf](../literature/2018_modenese.pdf).
-- The STAPLE toolbox repository and documentation.
-- OpenSim.
-- The LaiUhlrich2022 / Rajagopal model sources, where applicable.
+- Modenese, L. and Renault, J.-B. (2021). Automatic generation of personalised skeletal models of the lower limb from three-dimensional bone geometries. *Journal of Biomechanics*, 116, 110186. https://doi.org/10.1016/j.jbiomech.2020.110186.
+- Valente, G., Crimi, G., Vanella, N., Schileo, E. and Taddei, F. (2017). nmsBuilder: Freeware to create subject-specific musculoskeletal models for OpenSim. *Computer Methods and Programs in Biomedicine*, 152, 85-92. https://doi.org/10.1016/j.cmpb.2017.09.012.
+- Modenese, L., Montefiori, E., Wang, A., Wesarg, S., Viceconti, M. and Mazza, C. (2018). Investigation of the dependence of joint contact forces on musculotendon parameters using a codified workflow for image-based modelling. *Journal of Biomechanics*, 73, 108-118. https://doi.org/10.1016/j.jbiomech.2018.03.039.
+- Seth, A., Hicks, J. L., Uchida, T. K., Habib, A., Dembia, C. L., Dunne, J. J., Ong, C. F., DeMers, M. S., Rajagopal, A., Millard, M., Hamner, S. R., Arnold, E. M., Yong, J. R., Lakshmikanth, S. K., Sherman, M. A., Ku, J. P. and Delp, S. L. (2018). OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement. *PLOS Computational Biology*, 14(7), e1006223. https://doi.org/10.1371/journal.pcbi.1006223.
+- Modenese, L., Montefiori, E., Wang, A., Wesarg, S., Viceconti, M. and Mazza, C. (2018). Investigation of the dependence of joint contact forces on musculotendon parameters using a codified workflow for image-based modelling. *Journal of Biomechanics*, 73, 108-118. https://doi.org/10.1016/j.jbiomech.2018.03.039.
+- Uhlrich, S. D., Jackson, R. W., Seth, A., Kolesar, J. A. and Delp, S. L. (2022). Muscle coordination retraining inspired by musculoskeletal simulations reduces knee contact force. *Scientific Reports*, 12(1), 9842. https://doi.org/10.1038/s41598-022-13386-9.
 
-Also cite this repository or thesis material if these custom scripts are used directly.
