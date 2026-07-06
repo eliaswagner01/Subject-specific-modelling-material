@@ -127,7 +127,7 @@ NMSBuilderRajagopal_LaiUhlrich2022_femur_l_landmarks_and_muscle_path_points.txt
 
 These files can be imported into NMSBuilder as landmark clouds together with the femur geometries.
 
-### 3. Snap muscle and wrap landmarks in NMSBuilder
+### 3. Register landmarks in NMSBuilder and snap muscle path points
 
 Use NMSBuilder to register muscle path points and wrap object origins onto the subject-specific femur geometry and Run:
 

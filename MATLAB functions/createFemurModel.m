@@ -13,21 +13,34 @@
 % https://www.biorxiv.org/content/10.1101/2020.06.23.162727v2
 % ----------------------------------------------------------------------- %
 clear; clc; close all
-addpath(genpath('STAPLE'));
 
 %----------%
 % SETTINGS %
 %----------%
-output_models_folder = 'opensim_models_JBiomech';
-datasets_folder = 'bone_datasets';
+script_folder = fileparts(mfilename('fullpath'));
+material_folder = fileparts(script_folder);
+repo_folder = fileparts(material_folder);
+
+staple_folder = fullfile(repo_folder, 'msk-STAPLE', 'STAPLE');
+if ~isfolder(staple_folder)
+    staple_folder = fullfile(material_folder, 'STAPLE');
+end
+if ~isfolder(staple_folder)
+    error(['Could not find the STAPLE toolbox. Download msk-STAPLE next to ', ...
+        'this repository folder, or set staple_folder manually in this script.']);
+end
+addpath(genpath(staple_folder));
+
+output_models_folder = fullfile(material_folder, 'opensim_models_JBiomech');
+datasets_folder = fullfile(material_folder, 'bone_datasets');
 dataset_set = {'VISIBLE_H'};
 subj_mass_set = 90; % kg
 side_set = {'r', 'l'};
 vis_geom_format = 'stl'; % options: 'stl'/'obj'
 output_fitted_geometry_folder = fullfile(output_models_folder, 'fitted_geometries');
 
-generic_osim_model_file = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022_shoulder.osim';
-scaled_osim_model_file = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022_shoulder_scaled.osim';
+generic_osim_model_file = fullfile(material_folder, 'OpenSim', 'LaiUhlrich2022.osim');
+scaled_osim_model_file = fullfile(material_folder, 'OpenSim', 'LaiUhlrich2022_scaled.osim');
 scale_setup_file = fullfile(output_models_folder, 'scale_LaiUhlrich2022_femurs.xml');
 scale_factors_file = fullfile(output_models_folder, 'LaiUhlrich2022_femur_scale_factors.xml');
 
@@ -95,7 +108,7 @@ for n_d = 1:numel(dataset_set)
     logConsolePrintout('off');
 end
 
-rmpath(genpath('STAPLE'));
+rmpath(genpath(staple_folder));
 
 %------------------%
 % HELPER FUNCTIONS %

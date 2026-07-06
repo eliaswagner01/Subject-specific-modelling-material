@@ -17,9 +17,14 @@ clear; clc;
 import org.opensim.modeling.*
 
 %% User inputs
-osimFile = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022.osim';
-outputFolder = 'C:\Users\wagnerel85475\Documents\NMSBuilder';
+scriptFolder = fileparts(mfilename('fullpath'));
+materialFolder = fileparts(scriptFolder);
 
+osimFile = fullfile(materialFolder, 'OpenSim', 'LaiUhlrich2022.osim');
+outputFolder = fullfile(materialFolder, 'NMSBuilder');
+
+% Export these landmark-only files from NMSBuilder, or adjust the names here
+% if your downloaded repository uses a different landmark file name.
 landmarkFileR = fullfile(outputFolder, 'NMSBuilderRajagopal_femur_r_landmarks.txt');
 landmarkFileL = fullfile(outputFolder, 'NMSBuilderRajagopal_femur_l_landmarks.txt');
 
@@ -27,6 +32,8 @@ outputFileR = fullfile(outputFolder, ...
     'NMSBuilderRajagopal_LaiUhlrich2022_femur_r_landmarks_and_muscle_path_points.txt');
 outputFileL = fullfile(outputFolder, ...
     'NMSBuilderRajagopal_LaiUhlrich2022_femur_l_landmarks_and_muscle_path_points.txt');
+
+if ~isfolder(outputFolder); mkdir(outputFolder); end
 
 %% Load landmarks
 landmarksR = loadLandmarkLines(landmarkFileR);

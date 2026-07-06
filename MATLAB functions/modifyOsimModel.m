@@ -23,34 +23,37 @@ import org.opensim.modeling.*
 % SETTINGS %
 %----------%
 script_folder = fileparts(mfilename('fullpath'));
+material_folder = fileparts(script_folder);
 mm_to_m = 0.001;
 side_set = {'r', 'l'};
 
 %-------------%
 % INPUT FILES %
 %-------------%
-snapped_landmark_folder = 'C:\Users\wagnerel85475\Documents\NMSBuilder\Femur_model\Rajagopal_with_landmarks';
-scaled_osim_model_file = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022_scaled.osim';
-updated_osim_model_file = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022_scaled_snapped.osim';
-generic_marker_set_file = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022_markers_augmenter_shoulder.xml';
-updated_marker_set_file = 'C:\Users\wagnerel85475\Documents\opencap-core\opensimPipeline\Models\LaiUhlrich2022_markers_augmenter_shoulder_adjusted.xml';
+snapped_landmark_folder = fullfile(material_folder, 'NMSBuilder');
+scaled_osim_model_file = fullfile(material_folder, 'OpenSim', 'LaiUhlrich2022_scaled.osim');
+updated_osim_model_file = fullfile(material_folder, 'OpenSim', 'LaiUhlrich2022_adjusted.osim');
+generic_marker_set_file = fullfile(material_folder, 'OpenSim', 'LaiUhlrich2022_markers_augmenter.xml');
+updated_marker_set_file = fullfile(material_folder, 'OpenSim', 'LaiUhlrich2022_markers_augmenter_adjusted.xml');
 
 snapped_landmark_files.r = fullfile(snapped_landmark_folder, 'Muscles_femur_r_snapped.txt');
 snapped_landmark_files.l = fullfile(snapped_landmark_folder, 'Muscles_femur_l_snapped.txt');
 
-femur_geometry_files.r = fullfile(script_folder, 'opensim_models_JBiomech', ...
-    'automatic_VISIBLE_H_R_Geometries', 'femur_r.obj');
-femur_geometry_files.l = fullfile(script_folder, 'opensim_models_JBiomech', ...
-    'automatic_VISIBLE_H_L_Geometries', 'femur_l.obj');
+femur_geometry_files.r = firstExistingPath({ ...
+    fullfile(material_folder, 'opensim_models_JBiomech', 'automatic_VISIBLE_H_R_Geometries', 'femur_r.obj'), ...
+    fullfile(material_folder, 'opensim_models_JBiomech', 'automatic_VISIBLE_H_R_Geometries', 'femur_r.stl')});
+femur_geometry_files.l = firstExistingPath({ ...
+    fullfile(material_folder, 'opensim_models_JBiomech', 'automatic_VISIBLE_H_L_Geometries', 'femur_l.obj'), ...
+    fullfile(material_folder, 'opensim_models_JBiomech', 'automatic_VISIBLE_H_L_Geometries', 'femur_l.stl')});
 
-staple_jcs_files.r = fullfile(script_folder, 'opensim_models_JBiomech', ...
+staple_jcs_files.r = fullfile(material_folder, 'opensim_models_JBiomech', ...
     'fitted_geometries', 'VISIBLE_H', 'STAPLE_femur_coordinate_systems_r.mat');
-staple_jcs_files.l = fullfile(script_folder, 'opensim_models_JBiomech', ...
+staple_jcs_files.l = fullfile(material_folder, 'opensim_models_JBiomech', ...
     'fitted_geometries', 'VISIBLE_H', 'STAPLE_femur_coordinate_systems_l.mat');
 
-femur_scale_factor_files.r = fullfile(script_folder, 'opensim_models_JBiomech', ...
+femur_scale_factor_files.r = fullfile(material_folder, 'opensim_models_JBiomech', ...
     'fitted_geometries', 'VISIBLE_H', 'Femur_uniform_scaling_factor_r.txt');
-femur_scale_factor_files.l = fullfile(script_folder, 'opensim_models_JBiomech', ...
+femur_scale_factor_files.l = fullfile(material_folder, 'opensim_models_JBiomech', ...
     'fitted_geometries', 'VISIBLE_H', 'Femur_uniform_scaling_factor_l.txt');
 
 reference_model = Model(scaled_osim_model_file);
@@ -91,6 +94,17 @@ disp(['Updated model written to: ', updated_osim_model_file])
 %------------------%
 % HELPER FUNCTIONS %
 %------------------%
+function path = firstExistingPath(candidates)
+%FIRSTEXISTINGPATH Return the first existing candidate, or the first default.
+path = candidates{1};
+for n_candidate = 1:numel(candidates)
+    if isfile(candidates{n_candidate})
+        path = candidates{n_candidate};
+        return
+    end
+end
+end
+
 function landmarks = readSnappedLandmarkFile(landmark_file, unit_scale)
 %READSNAPPEDLANDMARKFILE Read snapped NMSBuilder landmarks and scale to m.
 fid = fopen(landmark_file, 'r');
