@@ -4,7 +4,7 @@ This folder contains the custom scripts and support files used to create a subje
 
 The overall model modification process is illustrated here:
 
-[modelModificationProcess.pdf](Bilder/modelModificationProcess.pdf)
+[Modification Process](images/modelModificationProcess.png)
 
 ## Folder Contents
 
