@@ -1,6 +1,6 @@
 # Subject-Specific Femur Model Modification Material
 
-This folder contains the custom scripts and support files used to create a subject-specific femur modification of the LaiUhlrich2022 OpenSim model. The workflow combines functionality from STAPLE/Modenese-style bone morphology processing, NMSBuilder landmark snapping, and OpenSim model editing.
+This folder contains the custom scripts and support files used to create a subject-specific femur modification of the LaiUhlrich2022 OpenSim model. The workflow combines functionality from STAPLE/Modenese-style bone morphology processing (Modenese and Renault, 2021), NMSBuilder landmark snapping (Valente et al., 2017), and OpenSim model editing. The overall step-by-step image-based modelling approach follows Modenese et al. (2018).
 
 The overall model modification process is illustrated here:
 
@@ -54,11 +54,11 @@ model = Model('OpenSim/LaiUhlrich2022.osim');
 
 The custom workflow builds on:
 
-- STAPLE: Shared Tools for Automatic Personalised Lower Extremity modelling.
-- Modenese et al. lower-limb model generation concepts and joint definitions.
+- STAPLE: Shared Tools for Automatic Personalised Lower Extremity modelling, cited through Modenese and Renault (2021).
+- Modenese et al. lower-limb model generation concepts and joint definitions, including the step-by-step subject-specific workflow described by Modenese et al. (2018).
 - GIBOC-core functions bundled with STAPLE for femur morphology processing.
 - OpenSim ScaleTool and model-editing API.
-- NMSBuilder for manually snapping muscle path points and wrap-object origins to the personalized femur geometry.
+- NMSBuilder for manually snapping muscle path points and wrap-object origins to the personalized femur geometry, cited through Valente et al. (2017).
 
 These scripts do not replace STAPLE or NMSBuilder. They are glue scripts that use their outputs to modify a LaiUhlrich-style OpenSim model.
 
@@ -241,7 +241,9 @@ For a reusable GitHub repository, it is recommended to replace these absolute pa
 
 If using this material, cite the underlying tools and methods:
 
-- Modenese L. and Renault J.-B., STAPLE / automatic generation of personalized lower-limb skeletal models.
+- Modenese, L. and Renault, J.-B. (2021). Automatic generation of personalised skeletal models of the lower limb from three-dimensional bone geometries. *Journal of Biomechanics*, 116, 110186. https://doi.org/10.1016/j.jbiomech.2020.110186. Local PDF: [2021_Modenese.pdf](../literature/2021_Modenese.pdf).
+- Valente, G., Crimi, G., Vanella, N., Schileo, E. and Taddei, F. (2017). nmsBuilder: Freeware to create subject-specific musculoskeletal models for OpenSim. *Computer Methods and Programs in Biomedicine*, 152, 85-92. https://doi.org/10.1016/j.cmpb.2017.09.012. Local PDF: [2017_Valente.pdf](../literature/2017_Valente.pdf).
+- Modenese, L., Montefiori, E., Wang, A., Wesarg, S., Viceconti, M. and Mazza, C. (2018). Investigation of the dependence of joint contact forces on musculotendon parameters using a codified workflow for image-based modelling. *Journal of Biomechanics*, 73, 108-118. https://doi.org/10.1016/j.jbiomech.2018.03.039. Local PDF: [2018_modenese.pdf](../literature/2018_modenese.pdf).
 - The STAPLE toolbox repository and documentation.
 - OpenSim.
 - The LaiUhlrich2022 / Rajagopal model sources, where applicable.
